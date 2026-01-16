@@ -1,36 +1,190 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# My Interior Designer AI
 
-## Getting Started
+Aplicación de diseño interior con Inteligencia Artificial que permite a los usuarios transformar sus espacios mediante el análisis de imágenes y generación de diseños personalizados.
 
-First, run the development server:
+## Características
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- 🎨 **Múltiples estilos de diseño**: Minimalista, gótico, rústico, industrial, escandinavo, bohemio y moderno
+- 🤖 **Procesamiento con IA**: Integración con OpenAI (DALL-E 3 y GPT-4)
+- 🛒 **Recomendaciones de compra**: Productos de Amazon para complementar el diseño
+- 👤 **Sistema de autenticación**: Registro y login de usuarios
+- 📱 **Interfaz responsiva**: Diseño moderno con Tailwind CSS
+
+## Requisitos Previos
+
+- Node.js 18 o superior
+- npm o yarn
+- API Key de OpenAI
+
+## Configuración
+
+1. **Clonar el repositorio**
+   ```bash
+   git clone <repository-url>
+   cd my-interior-designer-ai
+   ```
+
+2. **Instalar dependencias**
+   ```bash
+   npm install
+   ```
+
+3. **Configurar variables de entorno**
+   
+   Crear el archivo `.env.local` en la raíz del proyecto:
+   ```env
+   OPENAI_API_KEY=your_openai_api_key_here
+   NODE_ENV=development
+   ```
+
+   Para obtener una API Key de OpenAI:
+   - Visita [https://platform.openai.com/api-keys](https://platform.openai.com/api-keys)
+   - Crea una nueva cuenta o inicia sesión
+   - Genera una nueva API Key
+   - Copia la key en el archivo `.env.local`
+
+4. **Iniciar el servidor de desarrollo**
+   ```bash
+   npm run dev
+   ```
+
+   La aplicación estará disponible en `http://localhost:3000`
+
+## Estructura del Proyecto
+
+```
+my-interior-designer-ai/
+├── app/
+│   ├── api/
+│   │   ├── auth/
+│   │   │   ├── login/route.ts      # API de login
+│   │   │   └── register/route.ts   # API de registro
+│   │   └── design/route.ts         # API de generación de diseños
+│   ├── globals.css                 # Estilos globales
+│   ├── layout.tsx                  # Layout principal
+│   └── page.tsx                    # Landing page
+├── components/
+│   └── general/
+│       └── navbar.tsx              # Barra de navegación
+├── hooks/
+│   └── use-app.ts                  # Hooks personalizados
+├── lib/
+│   └── api-client.ts               # Cliente API
+├── public/                         # Archivos estáticos
+└── data/                          # Base de datos simulada
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## API Endpoints
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Autenticación
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+#### POST `/api/auth/register`
+Registra un nuevo usuario.
 
-## Learn More
+**Body:**
+```json
+{
+  "email": "user@example.com",
+  "password": "password123",
+  "name": "Nombre Usuario"
+}
+```
 
-To learn more about Next.js, take a look at the following resources:
+#### POST `/api/auth/login`
+Inicia sesión de usuario.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**Body:**
+```json
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Diseño
 
-## Deploy on Vercel
+#### GET `/api/design`
+Obtiene los estilos de diseño disponibles.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**Response:**
+```json
+{
+  "styles": ["minimalista", "gotico", "rustico"],
+  "descriptions": {
+    "minimalista": "diseño minimalista con líneas limpias...",
+    "gotico": "estilo gótico con elementos oscuros..."
+  }
+}
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+#### POST `/api/design`
+Genera un diseño de interior basado en una imagen y estilo.
+
+**Body (FormData):**
+- `image`: Archivo de imagen
+- `style`: Estilo de diseño
+
+**Response:**
+```json
+{
+  "success": true,
+  "generatedImage": "data:image/png;base64,...",
+  "recommendations": [
+    {
+      "name": "Producto",
+      "description": "Descripción",
+      "category": "muebles",
+      "priceRange": "$100-$200",
+      "amazonUrl": "https://amazon.com/..."
+    }
+  ],
+  "style": "minimalista",
+  "originalImage": "data:image/jpeg;base64,..."
+}
+```
+
+## Estilos de Diseño Disponibles
+
+- **Minimalista**: Líneas limpias, colores neutros, espacios despejados
+- **Gótico**: Elementos oscuros, detalles ornamentales, mobiliario vintage
+- **Rústico**: Materiales naturales, madera, elementos campestres
+- **Industrial**: Metales, ladrillos expuestos, acabados urbanos
+- **Escandinavo**: Blancos, madera clara, funcionalidad
+- **Bohemio**: Colores vibrantes, texturas, elementos étnicos
+- **Moderno**: Formas geométricas, colores audaces, tecnología
+
+## Scripts Disponibles
+
+- `npm run dev` - Inicia servidor de desarrollo
+- `npm run build` - Construye la aplicación para producción
+- `npm run start` - Inicia servidor de producción
+- `npm run lint` - Ejecuta ESLint
+- `npm run type-check` - Verifica tipos de TypeScript
+
+## Tecnologías Utilizadas
+
+- **Frontend**: Next.js 16, React 19, TypeScript
+- **Estilos**: Tailwind CSS
+- **Backend**: Next.js API Routes
+- **IA**: OpenAI (DALL-E 3, GPT-4)
+- **Manejo de imágenes**: Multer, Axios
+- **Estado**: React Hooks personalizados
+
+## Notas Importantes
+
+- La base de datos actual es simulada (archivos JSON). En producción se recomienda usar una base de datos real como PostgreSQL o MongoDB.
+- La autenticación usa tokens simulados. En producción implementar JWT con refresh tokens.
+- Las imágenes se procesan en tiempo real. Para alto tráfico, considerar usar un servicio de colas.
+- Los precios de los productos son aproximados. Se puede integrar con la API de Amazon para obtener precios en tiempo real.
+
+## Contribución
+
+1. Fork del proyecto
+2. Crear una rama (`git checkout -b feature/nueva-caracteristica`)
+3. Commit de los cambios (`git commit -am 'Agregar nueva característica'`)
+4. Push a la rama (`git push origin feature/nueva-caracteristica`)
+5. Crear un Pull Request
+
+## Licencia
+
+Este proyecto está bajo la Licencia MIT.

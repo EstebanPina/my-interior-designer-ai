@@ -104,15 +104,25 @@ Inicia sesión de usuario.
 ### Diseño
 
 #### GET `/api/design`
-Obtiene los estilos de diseño disponibles.
+Obtiene los estilos de diseño disponibles desde MongoDB.
 
 **Response:**
 ```json
 {
-  "styles": ["minimalista", "gotico", "rustico"],
+  "styles": ["classic", "modern", "scandinavian"],
   "descriptions": {
-    "minimalista": "diseño minimalista con líneas limpias...",
-    "gotico": "estilo gótico con elementos oscuros..."
+    "classic": "Inspirado en grecia y roma antiguas...",
+    "modern": "Basado en la funcionalidad y las líneas limpias..."
+  },
+  "categories": {
+    "Estilos clasicos": [
+      {
+        "slug": "classic",
+        "name": "Clásico",
+        "description": "Inspirado en grecia y roma antiguas..."
+      }
+    ],
+    "Estilos modernos y contemporáneos": [...]
   }
 }
 ```
@@ -145,13 +155,34 @@ Genera un diseño de interior basado en una imagen y estilo.
 
 ## Estilos de Diseño Disponibles
 
-- **Minimalista**: Líneas limpias, colores neutros, espacios despejados
-- **Gótico**: Elementos oscuros, detalles ornamentales, mobiliario vintage
-- **Rústico**: Materiales naturales, madera, elementos campestres
-- **Industrial**: Metales, ladrillos expuestos, acabados urbanos
-- **Escandinavo**: Blancos, madera clara, funcionalidad
-- **Bohemio**: Colores vibrantes, texturas, elementos étnicos
-- **Moderno**: Formas geométricas, colores audaces, tecnología
+La aplicación cuenta con **34 estilos de diseño** organizados en 9 categorías:
+
+### Estilos Clásicos (5 estilos)
+- **Clásico**: Inspirado en grecia y roma antiguas, con muebles elegantes
+- **Neoclásico**: Inspirado en el estilo clásico pero con elementos más modernos
+- **Victoriano**: Caracterizado por muebles ornamentados, colores ricos
+- **Tradicional**: Enfocado en la comodidad y elegancia atemporal
+- **Colonial**: Combinación de influencias europeas y latinoamericanas
+
+### Estilos Modernos y Contemporáneos (4 estilos)
+- **Moderno**: Basado en la funcionalidad y las líneas limpias
+- **Contemporáneo**: Refleja las tendencias actuales
+- **Minimalista**: Enfocado en la simplicidad extrema
+- **High Tech**: Estilo tecnológico e industrial
+
+### Estilos Naturales y Escandinavos (4 estilos)
+- **Escandinavo**: Luminoso, funcional y acogedor
+- **Japandi**: Fusión del minimalismo japonés y diseño escandinavo
+- **Wabi-Sabi**: Celebración de la imperfección y lo natural
+- **Biofílico**: Busca conectar el interior con la naturaleza
+
+### Y 5 categorías más:
+- **Estilos Industriales y Urbanos** (3 estilos)
+- **Estilos Rústicos y Campestres** (4 estilos)
+- **Estilos Expresivos y Artísticos** (4 estilos)
+- **Estilos Culturales y Étnicos** (4 estilos)
+- **Estilos Retro y Vintage** (3 estilos)
+- **Estilos Lujosos y Sofisticados** (3 estilos)
 
 ## Scripts Disponibles
 
@@ -160,15 +191,18 @@ Genera un diseño de interior basado en una imagen y estilo.
 - `npm run start` - Inicia servidor de producción
 - `npm run lint` - Ejecuta ESLint
 - `npm run type-check` - Verifica tipos de TypeScript
+- `npm run seed:styles` - Poblar MongoDB con los 34 estilos de diseño desde `/const/DesignStyles.ts`
 
 ## Tecnologías Utilizadas
 
 - **Frontend**: Next.js 16, React 19, TypeScript
 - **Estilos**: Tailwind CSS
 - **Backend**: Next.js API Routes
+- **Base de Datos**: MongoDB con Mongoose
 - **IA**: OpenAI (DALL-E 3, GPT-4)
 - **Manejo de imágenes**: Multer, Axios
 - **Estado**: React Hooks personalizados
+- **Configuración**: TypeScript, ts-node, dotenv
 
 ## Notas Importantes
 

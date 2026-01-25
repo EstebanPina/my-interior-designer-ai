@@ -152,7 +152,7 @@ export const DESIGN_STYLES = {
     name:"Estilos retro y vintage"
   },
 
-  luxuries: {
+luxuries: {
     modernLuxury: {
       name: "Lujo Moderno",
       description: "Combinación de diseño contemporáneo con materiales premium como mármol, latón y textiles sofisticados."
@@ -164,7 +164,7 @@ export const DESIGN_STYLES = {
     glam: {
       name: "Glam",
       description: "Estilo sofisticado con brillos, espejos, contrastes y una estética teatral."
-    }
-  },
-  name: "Estilos lujosos y sofisticados"
+    },
+    name: "Estilos lujosos y sofisticados"
+  }
 };

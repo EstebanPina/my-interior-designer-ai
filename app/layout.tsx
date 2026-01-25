@@ -30,7 +30,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${quicksand.className} ${poiretOne.className} antialiased`}
+        className={`${quicksand.className} ${poiretOne.className} antialiased text-gray-900 bg-white`}
       >
         {children}
       </body>

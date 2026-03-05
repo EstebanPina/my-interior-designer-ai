@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { MongoClient } from 'mongodb';
 import OpenAI from 'openai';
+import Replicate from 'replicate';
 import { DESIGN_STYLES } from '@/const/DesignStyles';
 
 // Initialize MongoDB
@@ -10,6 +11,11 @@ const mongoClient = new MongoClient(MONGODB_URI);
 // Initialize OpenAI
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!,
+});
+
+// Initialize Replicate
+const replicate = new Replicate({
+  auth: process.env.REPLICATE_API_TOKEN!,
 });
 
 // POST - Generar diseño con imagen y estilo
@@ -47,7 +53,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Conectar a MongoDB
-    mongoConnection = await mongoConnection.connect();
+    mongoConnection = await mongoClient.connect();
     const db = mongoConnection.db('MID-AI');
 
     // Buscar el estilo en MongoDB o usar la constante
@@ -67,11 +73,11 @@ export async function POST(request: NextRequest) {
     if (!designStyle) {
       const allStyles: any = DESIGN_STYLES;
       for (const [categoryKey, categoryData] of Object.entries(allStyles)) {
-        for (const [styleKey, styleData] of Object.entries(categoryData)) {
-          if (styleKey === style && typeof styleData === 'object' && styleData.name) {
+        for (const [styleKey, styleData] of Object.entries(categoryData as any)) {
+          if (styleKey === style && typeof styleData === 'object' && styleData && 'name' in styleData) {
             designStyle = {
               name: styleData.name,
-              description: styleData.description,
+              description: (styleData as any).description,
               category: (categoryData as any).name || categoryKey
             };
             break;
@@ -95,58 +101,70 @@ export async function POST(request: NextRequest) {
       description: designStyle.description
     };
 
-    // Si hay imagen, procesarla con DALL-E 3
+    // Si hay imagen, procesarla con gpt-image-1 (edición de imagen)
     if (imageBuffer) {
-      console.log('🎨 Processing image with style:', designStyle.name);
+      console.log('🎨 Processing image with gpt-image-1...');
       
-      // Optimizar el prompt según el estilo
-      const prompt = `Transform this room interior with ${designStyle.name.toLowerCase()} style: ${designStyle.description.toLowerCase()}. 
-Requirements:
-1. Keep room structure (walls, windows, doors)
-2. Apply ${designStyle.name.toLowerCase()} decor and furniture
-3. Ensure realistic, livable design
-4. Generate high-quality room image
-5. Maintain natural lighting and perspective
-
-After image, provide 5-8 Amazon products for this ${designStyle.name.toLowerCase()} style:
-- Product name
-- Brief description  
-- Category (furniture, lighting, decor)
-- Price range
-- Amazon search URL`;
-
-      // Generar imagen con OpenAI
-      console.log('🤖 Calling DALL-E 3...');
-      const imageResponse = await openai.images.generate({
-        model: "dall-e-3",
-        prompt: prompt,
-        n: 1,
-        size: "1024x1024",
-        quality: "standard",
-        response_format: "url",
+      const prompt = `Transform this room into a ${designStyle.name.toLowerCase()} style interior. ${designStyle.description}. Keep the same room layout, walls, windows, doors, and camera angle. Photorealistic, high quality interior design.`;
+      
+      // Usar la API directamente para gpt-image-1
+      console.log('🤖 Calling gpt-image-1 API directly...');
+      
+      const formData = new FormData();
+      formData.append('model', 'gpt-image-1');
+      formData.append('prompt', prompt);
+      formData.append('n', '1');
+      formData.append('size', '1024x1024');
+      
+      // Convertir buffer a Blob y agregar a FormData
+      const uint8Array = new Uint8Array(imageBuffer);
+      const blob = new Blob([uint8Array], { type: 'image/jpeg' });
+      formData.append('image', blob as any, 'room.jpg');
+      
+      const response = await fetch('https://api.openai.com/v1/images/edits', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+        },
+        body: formData
       });
-
-      if (!imageResponse.data || imageResponse.data.length === 0) {
-        throw new Error('Failed to generate image');
-      }
-
-      const imageData = imageResponse.data[0];
-      if (!imageData || !imageData.url) {
-        throw new Error('No image URL returned');
-      }
-
-      const imageUrl = imageData.url;
-      console.log('✅ Image generated:', imageUrl);
-
-      // Descargar imagen generada
-      const imageDownloadResponse = await fetch(imageUrl);
-      if (!imageDownloadResponse.ok) {
-        throw new Error('Failed to download generated image');
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`gpt-image-1 API error: ${response.status} - ${errorText}`);
       }
       
-      const generatedImageBuffer = await imageDownloadResponse.arrayBuffer();
-      const generatedImageBase64 = Buffer.from(generatedImageBuffer).toString('base64');
-      const generatedImageDataUrl = `image/png;base64,${generatedImageBase64}`;
+      const data = await response.json();
+      console.log('📦 gpt-image-1 response:', JSON.stringify(data));
+      
+      if (!data.data || data.data.length === 0) {
+        throw new Error('Failed to generate image: ' + JSON.stringify(data));
+      }
+
+      const imageUrl = data.data[0]?.url;
+      const imageB64 = data.data[0]?.b64_json;
+      
+      if (!imageUrl && !imageB64) {
+        throw new Error('No image URL or b64 returned. Response: ' + JSON.stringify(data));
+      }
+      
+      let generatedImageDataUrl: string;
+      
+      if (imageB64) {
+        console.log('📦 Image returned as base64');
+        generatedImageDataUrl = `image/png;base64,${imageB64}`;
+      } else {
+        console.log('✅ Image generated with gpt-image-1:', imageUrl);
+        // Descargar imagen generada
+        const imageDownloadResponse = await fetch(imageUrl);
+        if (!imageDownloadResponse.ok) {
+          throw new Error('Failed to download generated image');
+        }
+        
+        const generatedImageBuffer = await imageDownloadResponse.arrayBuffer();
+        const generatedImageBase64 = Buffer.from(generatedImageBuffer).toString('base64');
+        generatedImageDataUrl = `image/png;base64,${generatedImageBase64}`;
+      }
 
       // Generar recomendaciones con GPT-4
       console.log('🛒 Generating recommendations...');
@@ -160,19 +178,18 @@ After image, provide 5-8 Amazon products for this ${designStyle.name.toLowerCase
           {
             role: "user",
             content: `Generate 5-8 Amazon product recommendations for ${designStyle.name.toLowerCase()} interior design.
-  
-Format as JSON:
-{
-  "recommendations": [
-    {
-      "name": "product name",
-      "description": "brief description",
-      "category": "furniture|lighting|decor|textiles",
-      "priceRange": "$X-$Y",
-      "amazonUrl": "search url"
-    }
-  ]
-}`
+                Format as JSON:
+                {
+                  "recommendations": [
+                    {
+                      "name": "product name",
+                      "description": "brief description",
+                      "category": "furniture|lighting|decor|textiles",
+                      "priceRange": "$X-$Y",
+                      "amazonUrl": "search url"
+                    }
+                  ]
+                }`
           }
         ],
         max_tokens: 800,
@@ -239,9 +256,8 @@ Format as JSON:
       } catch (closeError) {
         console.error('Error closing connection:', closeError);
       }
-    }
 
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     
     return NextResponse.json(
       { 
@@ -259,7 +275,7 @@ export async function GET(request: NextRequest) {
   
   try {
     // Conectar a MongoDB
-    mongoConnection = await mongoConnection.connect();
+    mongoConnection = await mongoClient.connect();
     const db = mongoConnection.db('MID-AI');
 
     // Intentar obtener estilos desde MongoDB

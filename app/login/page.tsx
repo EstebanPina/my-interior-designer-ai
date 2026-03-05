@@ -15,7 +15,7 @@ export default function LoginPage() {
 
   // Google OAuth
   const signInWithGoogle = () => {
-    // URL de OAuth de Google con tu client ID
+    // URL de OAuth de Google (ajusta los parámetros según tu configuración de Google Cloud)
     const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
       `client_id=${process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}&` +
       `redirect_uri=${encodeURIComponent(process.env.NEXT_PUBLIC_APP_URL + '/api/auth/google/callback')}&` +
@@ -28,7 +28,7 @@ export default function LoginPage() {
 
   // Facebook OAuth
   const signInWithFacebook = () => {
-    // URL de OAuth de Facebook
+    // URL de OAuth de Facebook (ajusta los parámetros según tu configuración de Facebook App)
     const facebookAuthUrl = `https://www.facebook.com/v18.0/dialog/oauth?` +
       `client_id=${process.env.NEXT_PUBLIC_FACEBOOK_CLIENT_ID}&` +
       `redirect_uri=${encodeURIComponent(process.env.NEXT_PUBLIC_APP_URL + '/api/auth/facebook/callback')}&` +
@@ -88,15 +88,9 @@ export default function LoginPage() {
             height={60}
             className="mx-auto mb-4"
           />
-          <h1 className="text-2xl font-bold text-gray-900">
-            {mode === 'signin' ? 'Bienvenido de nuevo' : 'Crea tu cuenta'}
+          <h1 className="text-xl font-semibold text-gray-900">
+            {mode === 'signin' ? 'Ingresa a tu cuenta' : 'Crea tu cuenta'}
           </h1>
-          <p className="text-gray-600 mt-2">
-            {mode === 'signin' 
-              ? 'Inicia sesión para transformar tus espacios' 
-              : 'Regístrate y empieza a diseñar con IA'
-            }
-          </p>
         </div>
 
         {/* Social Login */}
@@ -104,7 +98,7 @@ export default function LoginPage() {
           <button
             onClick={signInWithGoogle}
             disabled={isLoading}
-            className="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 rounded-lg px-4 py-3 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-3 bg-blue-700 text-white font-bold rounded-lg px-4 py-3 hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-lg"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -114,7 +108,8 @@ export default function LoginPage() {
             </svg>
             <span className="font-medium">Continuar con Google</span>
           </button>
-
+            {/*
+            
           <button
             onClick={signInWithFacebook}
             disabled={isLoading}
@@ -136,7 +131,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Email Form */}
+        Email Login Form 
         <form onSubmit={handleSubmit} className="space-y-4">
           {mode === 'signup' && (
             <div>
@@ -212,8 +207,8 @@ export default function LoginPage() {
             )}
           </button>
         </form>
-
-        {/* Switch Mode */}
+        
+     Switch Mode
         <div className="mt-6 text-center text-sm">
           <span className="text-gray-600">
             {mode === 'signin' ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?'}
@@ -229,8 +224,8 @@ export default function LoginPage() {
             {mode === 'signin' ? 'Regístrate' : 'Inicia Sesión'}
           </button>
         </div>
-
-        {/* Terms */}
+              
+        Terms 
         <div className="mt-6 text-xs text-center text-gray-500">
           Al continuar, aceptas nuestros{' '}
           <a href="/terms" className="text-blue-600 hover:underline">
@@ -240,6 +235,7 @@ export default function LoginPage() {
           <a href="/privacy" className="text-blue-600 hover:underline">
             Política de Privacidad
           </a>
+          */}
         </div>
       </div>
     </div>

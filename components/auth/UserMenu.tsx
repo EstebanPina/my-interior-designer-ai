@@ -1,20 +1,23 @@
 'use client';
 
-import { useCognitoAuth } from '@/hooks/use-cognito-auth';
+import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export function UserMenu() {
-  const { user, signOut, isPremium, remainingDesigns } = useCognitoAuth();
+  const { user, logout, isAuthenticated } = useAuth();
+  const router = useRouter();
 
-  if (!user) {
+  const handleSignOut = () => {
+    logout();
+  };
+
+  if (!isAuthenticated || !user) {
     return (
       <div className="flex items-center space-x-4">
-        <Link href="/pricing" className="text-gray-600 hover:text-gray-900">
-          Precios
-        </Link>
-        <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+        <Link href="/login" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
           Iniciar Sesión
-        </button>
+        </Link>
       </div>
     );
   }
@@ -23,16 +26,16 @@ export function UserMenu() {
     <div className="flex items-center space-x-4">
       <div className="flex items-center space-x-3">
         <div className="text-right">
-          <p className="text-sm font-medium text-gray-900">
+          <p className="text-sm font-medium w-32 overflow-x-hidden text-wrap text-gray-900">
             {user.name || user.email}
           </p>
           <p className="text-xs text-gray-500">
-            {isPremium ? '🔥 Premium' : `Diseños restantes: ${remainingDesigns}`}
+            {user.subscription === 'premium' ? '🔥 Premium' : `Plan: ${user.subscription}`}
           </p>
         </div>
-        {user.picture ? (
+        {user.avatar ? (
           <img
-            src={user.picture}
+            src={user.avatar}
             alt={user.name || user.email}
             className="w-10 h-10 rounded-full"
           />
@@ -60,12 +63,12 @@ export function UserMenu() {
             Dashboard
           </Link>
           <Link
-            href="/designs"
+            href="/chat"
             className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
           >
-            Mis Diseños
+            Nuevo Diseño
           </Link>
-          {!isPremium && (
+          {user.subscription !== 'premium' && (
             <Link
               href="/pricing"
               className="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 font-medium"
@@ -75,7 +78,7 @@ export function UserMenu() {
           )}
           <div className="border-t border-gray-200 my-2"></div>
           <button
-            onClick={signOut}
+            onClick={handleSignOut}
             className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
           >
             Cerrar Sesión

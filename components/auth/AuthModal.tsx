@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useCognitoAuth } from '@/hooks/use-cognito-auth';
+import { useRouter } from 'next/navigation';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -9,25 +9,55 @@ interface AuthModalProps {
 }
 
 export function AuthModal({ isOpen, onClose }: AuthModalProps) {
-  const { signIn, signInWithEmail, signUp, isLoading, error } = useCognitoAuth();
+  const router = useRouter();
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
+  const signInWithGoogle = () => {
+    const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
+      `client_id=${process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}&` +
+      `redirect_uri=${encodeURIComponent(process.env.NEXT_PUBLIC_APP_URL + '/api/auth/google/callback')}&` +
+      `response_type=code&` +
+      `scope=${encodeURIComponent('openid email profile')}&` +
+      `access_type=offline`;
+    
+    window.location.href = googleAuthUrl;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (mode === 'signin') {
-      await signInWithEmail(email, password);
-    } else {
-      await signUp(email, password, name);
-    }
-    
-    if (!error) {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const endpoint = mode === 'signin' ? '/api/auth/login' : '/api/auth/register';
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, ...(mode === 'signup' && { name }) }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Error en la autenticación');
+      }
+
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      
       onClose();
+      router.push('/dashboard');
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -49,7 +79,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
         {/* Social Login */}
         <div className="space-y-3 mb-6">
           <button
-            onClick={() => signIn('google')}
+            onClick={signInWithGoogle}
             disabled={isLoading}
             className="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 rounded-lg px-4 py-3 hover:bg-gray-50 transition-colors disabled:opacity-50"
           >
@@ -59,22 +89,12 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
             </svg>
-            <span>Continuar con Google</span>
-          </button>
-
-          <button
-            onClick={() => signIn('facebook')}
-            disabled={isLoading}
-            className="w-full flex items-center justify-center gap-3 bg-blue-600 text-white rounded-lg px-4 py-3 hover:bg-blue-700 transition-colors disabled:opacity-50"
-          >
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-            </svg>
-            <span>Continuar con Facebook</span>
+            Continuar con Google
           </button>
         </div>
 
-        <div className="relative mb-6">
+        {/* Divider */}
+        <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-gray-300"></div>
           </div>
@@ -94,7 +114,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               />
             </div>
@@ -108,7 +128,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required
             />
           </div>
@@ -121,15 +141,13 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required
             />
           </div>
 
           {error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">
-              {error}
-            </div>
+            <div className="text-red-600 text-sm">{error}</div>
           )}
 
           <button
@@ -141,13 +159,12 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
           </button>
         </form>
 
-        <div className="mt-6 text-center text-sm">
-          <span className="text-gray-600">
-            {mode === 'signin' ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?'}
-          </span>
+        {/* Switch Mode */}
+        <div className="mt-6 text-center text-sm text-gray-600">
+          {mode === 'signin' ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?'}
           <button
             onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
-            className="ml-1 text-blue-600 hover:text-blue-700 font-medium"
+            className="ml-1 text-blue-600 hover:underline font-medium"
           >
             {mode === 'signin' ? 'Regístrate' : 'Inicia Sesión'}
           </button>

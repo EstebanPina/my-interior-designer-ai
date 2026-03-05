@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Poiret_One, Quicksand, PT_Serif } from "next/font/google";
+import { Providers } from "@/components/Providers";
 import "./globals.css";
 
 const poiretOne = Poiret_One({
@@ -32,7 +33,9 @@ export default function RootLayout({
       <body
         className={`${quicksand.className} ${poiretOne.className} antialiased text-gray-900 bg-white`}
       >
-        {children}
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );

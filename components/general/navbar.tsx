@@ -28,7 +28,7 @@ export default function Navbar() {
           <Link href="#how-it-works" className="text-gray-800 hover:text-blue-600 transition-colors">
             Cómo funciona
           </Link>
-          <Link href="/pricing" className="text-gray-800 hover:text-blue-600 transition-colors">
+          <Link href="#pricing" className="text-gray-800 hover:text-blue-600 transition-colors">
             Precios
           </Link>
           <UserMenu />

@@ -4,6 +4,7 @@ import { useSession } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function Dashboard() {
   const { user, isLoading, isAuthenticated } = useSession();
@@ -133,7 +134,8 @@ export default function Dashboard() {
               </div>
             </button>
 
-            <button
+            <Link
+              href="https://www.notion.so/My-Interior-Designer-31a46123b5fd80a5a7abe359df3e5794?source=copy_link"
               className="flex items-center gap-4 p-4 border-2 border-gray-200 rounded-lg hover:bg-gray-50 transition"
             >
               <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
@@ -145,7 +147,7 @@ export default function Dashboard() {
                 <div className="font-semibold text-gray-900">Tutoriales</div>
                 <div className="text-sm text-gray-500">Aprende a usar la app</div>
               </div>
-            </button>
+            </Link>
 
             <button
               className="flex items-center gap-4 p-4 border-2 border-gray-200 rounded-lg hover:bg-gray-50 transition"

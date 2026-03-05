@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { MongoClient } from 'mongodb';
 
-const MONGODB_URI = process.env.MONGODB_URI!;
-const mongoClient = new MongoClient(MONGODB_URI);
-
 export async function GET(request: NextRequest) {
+  const MONGODB_URI = process.env.MONGODB_URI!;
+  const mongoClient = new MongoClient(MONGODB_URI);
   const searchParams = request.nextUrl.searchParams;
   const code = searchParams.get('code');
   const state = searchParams.get('state');

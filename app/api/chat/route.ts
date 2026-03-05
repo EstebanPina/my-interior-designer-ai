@@ -3,16 +3,14 @@ import { MongoClient } from 'mongodb';
 import OpenAI from 'openai';
 import { DESIGN_STYLES } from '@/const/DesignStyles';
 
-// Initialize MongoDB
-const MONGODB_URI = process.env.MONGODB_URI!;
-const mongoClient = new MongoClient(MONGODB_URI);
-
 // Initialize OpenAI con tu API Key Pro
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!,
 });
 
 export async function POST(request: NextRequest) {
+  const MONGODB_URI = process.env.MONGODB_URI!;
+  const mongoClient = new MongoClient(MONGODB_URI);
   let mongoConnection: any;
   
   try {

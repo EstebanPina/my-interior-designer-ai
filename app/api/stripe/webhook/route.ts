@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { MongoClient } from 'mongodb';
 
-const MONGODB_URI = process.env.MONGODB_URI!;
-const mongoClient = new MongoClient(MONGODB_URI);
-
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST(request: NextRequest) {
+  const MONGODB_URI = process.env.MONGODB_URI!;
+  const mongoClient = new MongoClient(MONGODB_URI);
   let mongoConnection;
   
   try {

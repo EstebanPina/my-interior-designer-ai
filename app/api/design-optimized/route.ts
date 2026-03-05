@@ -4,22 +4,20 @@ import OpenAI from 'openai';
 import Replicate from 'replicate';
 import { DESIGN_STYLES } from '@/const/DesignStyles';
 
-// Initialize MongoDB
-const MONGODB_URI = process.env.MONGODB_URI!;
-const mongoClient = new MongoClient(MONGODB_URI);
-
-// Initialize OpenAI
+// Initialize OpenAI (doesn't require runtime connection)
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!,
 });
 
-// Initialize Replicate
+// Initialize Replicate (doesn't require runtime connection)
 const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN!,
 });
 
 // POST - Generar diseño con imagen y estilo
 export async function POST(request: NextRequest) {
+  const MONGODB_URI = process.env.MONGODB_URI!;
+  const mongoClient = new MongoClient(MONGODB_URI);
   let mongoConnection: any;
   
   try {
@@ -271,6 +269,8 @@ export async function POST(request: NextRequest) {
 
 // GET - Obtener estilos disponibles
 export async function GET(request: NextRequest) {
+  const MONGODB_URI = process.env.MONGODB_URI!;
+  const mongoClient = new MongoClient(MONGODB_URI);
   let mongoConnection: any;
   
   try {

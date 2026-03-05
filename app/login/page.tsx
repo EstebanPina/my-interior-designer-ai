@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { useSession } from '@/hooks/useAuth';
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -12,7 +13,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const router = useRouter();
-
+  const { user, isAuthenticated } = useSession();
   // Google OAuth
   const signInWithGoogle = () => {
     // URL de OAuth de Google (ajusta los parámetros según tu configuración de Google Cloud)
@@ -25,7 +26,7 @@ export default function LoginPage() {
     
     window.location.href = googleAuthUrl;
   };
-
+  
   // Facebook OAuth
   const signInWithFacebook = () => {
     // URL de OAuth de Facebook (ajusta los parámetros según tu configuración de Facebook App)
@@ -75,7 +76,11 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
-
+    useEffect(() => {
+      if (isAuthenticated) {
+        router.push('/dashboard');
+      }
+    }, [isAuthenticated, router]);
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
       <div className="max-w-md w-full bg-white rounded-xl shadow-xl p-8">

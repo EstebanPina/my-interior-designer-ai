@@ -9,10 +9,14 @@ export async function GET(request: NextRequest) {
   const state = searchParams.get('state');
 
   if (!code) {
-    return NextResponse.redirect('/login?error=missing_code');
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ;
+    return NextResponse.redirect(`${appUrl}/login?error=missing_code`);
   }
 
   try {
+    console.log('Google callback - APP_URL:', process.env.NEXT_PUBLIC_APP_URL);
+    console.log('Google callback - CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? 'set' : 'missing');
+    
     // Exchange code for Google access token
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
@@ -29,10 +33,12 @@ export async function GET(request: NextRequest) {
     });
 
     const tokenData = await tokenResponse.json();
-
+    console.log('Token response status:', tokenResponse.status);
+    
     if (tokenData.error) {
-      console.error('Google token error:', tokenData.error);
-      return NextResponse.redirect('/login?error=token_failed');
+      console.error('Google token error:', tokenData);
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ;
+      return NextResponse.redirect(`${appUrl}/login?error=token_failed`);
     }
 
     // Get user info from Google
@@ -48,7 +54,9 @@ export async function GET(request: NextRequest) {
     const userData = await userResponse.json();
 
     // Connect to MongoDB
+    console.log('Connecting to MongoDB...');
     await mongoClient.connect();
+    console.log('MongoDB connected');
     const db = mongoClient.db('MID-AI');
     const usersCollection = db.collection('users');
 
@@ -91,7 +99,8 @@ export async function GET(request: NextRequest) {
     // Create JWT token (simple implementation)
     // User validation to prevent unauthorized access
     if (!user) {
-      return NextResponse.redirect('/login?error=user_creation_failed');
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ;
+      return NextResponse.redirect(`${appUrl}/login?error=user_creation_failed`);
     }
     const token = Buffer.from(
       JSON.stringify({
@@ -102,7 +111,8 @@ export async function GET(request: NextRequest) {
     ).toString('base64');
 
     // Redirect to frontend with token
-    const redirectUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?token=${encodeURIComponent(token)}&user=${encodeURIComponent(JSON.stringify({
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ;
+    const redirectUrl = `${appUrl}/auth/callback?token=${encodeURIComponent(token)}&user=${encodeURIComponent(JSON.stringify({
       userId: user.userId,
       email: user.email,
       name: user.name,
@@ -117,6 +127,8 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Google OAuth error:', error);
-    return NextResponse.redirect('/login?error=oauth_failed');
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ;
+    return NextResponse.redirect(`${appUrl}/login?error=oauth_failed&details=${encodeURIComponent(errorMessage)}`);
   }
 }

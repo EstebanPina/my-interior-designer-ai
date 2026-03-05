@@ -1,17 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
+import { User } from '@/interfaces/login';
 
 // Base de datos simulada
 const USERS_FILE = join(process.cwd(), 'data', 'users.json');
-
-interface User {
-  id: string;
-  email: string;
-  password: string;
-  name: string;
-  createdAt: string;
-}
 
 // Leer usuarios
 function getUsers(): User[] {

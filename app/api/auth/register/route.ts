@@ -1,17 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { writeFileSync, readFileSync, existsSync } from 'fs';
 import { join } from 'path';
-
+import { User } from '@/interfaces/login';
 // Base de datos simulada (en producción usar una base de datos real)
 const USERS_FILE = join(process.cwd(), 'data', 'users.json');
 
-interface User {
-  id: string;
-  email: string;
-  password: string; // En producción usar hash
-  name: string;
-  createdAt: string;
-}
+
 
 // Asegurar que el directorio data exista
 function ensureDataDir() {

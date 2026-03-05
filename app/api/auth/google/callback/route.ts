@@ -54,12 +54,12 @@ export async function GET(request: NextRequest) {
     const usersCollection = db.collection('users');
 
     // Check if user exists
-    let user = await usersCollection.findOne({ email: userData.email });
+    let user: any = await usersCollection.findOne({ email: userData.email });
 
     if (!user) {
       // Create new user
       const newUser = {
-        userId: userData.id, // Use Google ID as userId
+        userId: userData.id,
         email: userData.email,
         name: userData.name,
         avatar: userData.picture,
@@ -72,8 +72,8 @@ export async function GET(request: NextRequest) {
         googleId: userData.id,
       };
 
-      await usersCollection.insertOne(newUser);
-      user = newUser;
+      const result = await usersCollection.insertOne(newUser);
+      user = { ...newUser, _id: result.insertedId };
     } else {
       // Update existing user
       await usersCollection.updateOne(
@@ -90,6 +90,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Create JWT token (simple implementation)
+    // User validation to prevent unauthorized access
+    if (!user) {
+      return NextResponse.redirect('/login?error=user_creation_failed');
+    }
     const token = Buffer.from(
       JSON.stringify({
         userId: user.userId,
